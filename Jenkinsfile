@@ -5,15 +5,13 @@ pipeline {
     }
 
     environment {
-     PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin;${env.PATH}"
-           JAVA_HOME = 'C:\\Program Files\\Java\\jdk-21'
+        PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin;${env.PATH}"
+        JAVA_HOME = 'C:\\Program Files\\Java\\jdk-21'
         SONARQUBE_SERVER = 'SonarQubeServer'
         SONAR_TOKEN = 'sqa_af3f39c6438407cba88b20e7e95fc4a15a3edd34'
         DOCKERHUB_CREDENTIALS_ID = 'Docker_Hub'
         DOCKERHUB_REPO = 'jarmoillikainen/sonar'
         DOCKER_IMAGE_TAG = 'latest'
-
-
     }
 
     stages {
@@ -30,40 +28,37 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-                    steps {
-                        withSonarQubeEnv('SonarQubeServer') {
-                            bat """
-                                ${tool 'SonarScanner'}\\bin\\sonar-scanner ^
-                                -Dsonar.projectKey=devops-demo ^
-                                -Dsonar.sources=src ^
-                                -Dsonar.projectName=DevOps-Demo ^
-                                -Dsonar.host.url=http://localhost:9000 ^
-                                -Dsonar.login=${env.SONAR_TOKEN} ^
-                                -Dsonar.java.binaries=target/classes
-                            """
-                        }
-                    }
+            steps {
+                withSonarQubeEnv('SonarQubeServer') {
+                    bat """
+                        ${tool 'SonarScanner'}\\bin\\sonar-scanner ^
+                        -Dsonar.projectKey=devops-demo ^
+                        -Dsonar.sources=src ^
+                        -Dsonar.projectName=DevOps-Demo ^
+                        -Dsonar.host.url=http://localhost:9000 ^
+                        -Dsonar.login=${env.SONAR_TOKEN} ^
+                        -Dsonar.java.binaries=target/classes
+                    """
                 }
-
-
+            }
+        }
 
         stage('Build Docker Image') {
-                    steps {
-                        script {
-                            docker.build("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}")
+            steps {
+                script {
+                    docker.build("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}")
+                }
+            }
+        }
 
-                        }
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS_ID) {
+                        docker.image("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}").push()
                     }
                 }
-
-                stage('Push Docker Image to Docker Hub') {
-                    steps {
-                        script {
-                            docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS_ID) {
-                                docker.image("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}").push()
-                            }
-                        }
-                    }
-                }
+            }
+        }
     }
 }
