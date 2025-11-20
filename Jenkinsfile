@@ -51,8 +51,7 @@ pipeline {
                     steps {
                         script {
                             docker.build("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}")
-                            // Or specify Dockerfile path explicitly if needed
-                            // docker.build("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}", "-f ./Dockerfile .")
+
                         }
                     }
                 }
