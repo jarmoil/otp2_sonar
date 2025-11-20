@@ -80,7 +80,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>Calculator</mainClass>
+                            <mainClass>laskin.Calculator</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
