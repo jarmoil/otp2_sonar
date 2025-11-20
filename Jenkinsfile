@@ -3,7 +3,6 @@ pipeline {
     tools {
         maven 'Maven3'
     }
-
     environment {
         PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin;${env.PATH}"
         JAVA_HOME = 'C:\\Program Files\\Java\\jdk-21'
@@ -13,36 +12,24 @@ pipeline {
         DOCKERHUB_REPO = 'jarmoillikainen/sonar'
         DOCKER_IMAGE_TAG = 'latest'
     }
-
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'master', url: 'https://github.com/jarmoil/otp2_sonar.git'
             }
         }
-
         stage('Build') {
             steps {
                 bat 'mvn clean install'
             }
         }
-
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQubeServer') {
-                    bat """
-                        ${tool 'SonarScanner'}\\bin\\sonar-scanner ^
-                        -Dsonar.projectKey=devops-demo ^
-                        -Dsonar.sources=src ^
-                        -Dsonar.projectName=DevOps-Demo ^
-                        -Dsonar.host.url=http://localhost:9000 ^
-                        -Dsonar.login=${env.SONAR_TOKEN} ^
-                        -Dsonar.java.binaries=target/classes
-                    """
+                    bat """${tool 'SonarScanner'}\\bin\\sonar-scanner -Dsonar.projectKey=devops-demo -Dsonar.sources=src -Dsonar.projectName=DevOps-Demo -Dsonar.host.url=http://localhost:9000 -Dsonar.login=${env.SONAR_TOKEN} -Dsonar.java.binaries=target/classes"""
                 }
             }
         }
-
         stage('Build Docker Image') {
             steps {
                 script {
